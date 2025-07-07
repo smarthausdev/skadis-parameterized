@@ -15,14 +15,9 @@ wall_thickness = 2;
 
 
 hook_fit_offset = 0.25;
-hook_width = 5 - hook_fit_offset;
-hook_depth = 10;
-hook_height = 15 - hook_fit_offset;
-hook_distance = 40; // Distance between two hooks
 
 
-
-module hook() {
+module hook(hook_width, hook_depth, hook_height) {
     hook_wall_gap =  5.25; // This is the board thickness
     diff()
     cuboid([hook_width, hook_depth, hook_height], rounding = hook_width / 2, edges="Y") {
@@ -31,7 +26,7 @@ module hook() {
     
 }
 
-module cut_out(wall_width, wall_depth) {
+module cut_out(wall_width, wall_depth, hook_distance, hook_width, hook_depth, hook_height) {
     diff()
     cuboid([wall_width, wall_depth, hook_height], rounding = hook_width/2, edges=[BACK+LEFT, BACK+RIGHT], anchor=LEFT + FRONT) {
         if (skip_middle) {
@@ -63,15 +58,25 @@ module cut_out(wall_width, wall_depth) {
     }
 }
 
-color("white") {
+module bracket() {
+    hook_width = 5 - hook_fit_offset;
+    hook_depth = 10;
+    hook_height = 15 - hook_fit_offset;
+    
+    hook_distance = 40; // Distance between two hooks
+    
     wall_depth = cable_diameter + wall_thickness;
     wall_width = (skadis_columns - 1) * hook_distance + hook_width;
     
     if (skip_middle) {
-        xcopies(l=wall_width - hook_width, n=2, sp=[0,0,0]) hook();            
+        xcopies(l=wall_width - hook_width, n=2, sp=[0,0,0]) hook(hook_width, hook_depth, hook_height);
     } else {
-        xcopies(hook_distance, n=skadis_columns, sp=[0,0,0]) hook();
+        xcopies(hook_distance, n=skadis_columns, sp=[0,0,0]) hook(hook_width, hook_depth, hook_height);
     }
     
-    back(hook_depth/2) left(hook_width/2) cut_out(wall_width, wall_depth);
+    back(hook_depth/2) left(hook_width/2) cut_out(wall_width, wall_depth, hook_distance, hook_width, hook_depth, hook_height);
+}
+
+color("white") {
+    bracket();
 }
